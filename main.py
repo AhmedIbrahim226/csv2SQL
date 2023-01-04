@@ -1,30 +1,22 @@
 import argparse
 import sys
+from db.queries import query
 
-parser = argparse.ArgumentParser(description="Multiplying X and Y.")
+parser = argparse.ArgumentParser(description="Csv2SQL.")
 
-parser.add_argument("X", help="just given number", type=int)
-parser.add_argument("Y", help="just given number", type=int)
-group = parser.add_mutually_exclusive_group()
-group.add_argument("-x", "--exit", help="exit from the program")
-group.add_argument("-q", "--quit", help="quit from the program", action="store_true")
-
+parser.add_argument("csv_file_path", help="The path of cs_v file.")
+parser.add_argument("db_engine", help="Database db.", choices=['sqlite', 'postgres'])
+parser.add_argument("table", help="The table name.")
+parser.add_argument("--path", help="The path of sqlite db file.")
 
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 2: parser.print_help(); sys.exit()
     else: args = parser.parse_args()
-    print(args.X * args.Y)
-    print(args.quit)
 
-# import pandas as pd
-# import json
-#
-# df = pd.read_csv('data.csv')
-#
-#
-# analysis = df.to_json()
-# to_json = json.loads(analysis)
-# print(to_json)
+    if args.db_engine == 'sqlite' and not args.path:
+        parser.error('Please specify --path argument.')
 
+    if args.db_engine == "sqlite":
+        query(args.db_engine, args.csv_file_path, args.table, args.path)
