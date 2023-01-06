@@ -1,5 +1,5 @@
 from .sqlite3_engine import create_connection as sqlite_create_connection
-from .postgresql_engine import create_connection as postgres_create_connection
+from .postgresql_engine import create_connection as postgres_create_connection, create_table_if_exists, insert_values
 from utilities.csv_ import read_csv_file
 
 
@@ -14,7 +14,7 @@ class Queries(object):
     @staticmethod
     def to_sqlite_db(dbpath, csv_file_path, table):
         con = sqlite_create_connection(path_to_db=dbpath)
-        data = read_csv_file(path_to_csv=csv_file_path)
+        data, columns = read_csv_file(path_to_csv=csv_file_path)
         data.to_sql(table, con=con, if_exists='append', index=False)
         con.close()
 
@@ -29,9 +29,9 @@ class Queries(object):
         host = host_n_dbname.split("/")[0]
         dbname = host_n_dbname.split("/")[1]
 
-        con = postgres_create_connection(user=user, password=_pass, host=host, dbname=dbname)
-        data = read_csv_file(path_to_csv=csv_file_path)
-        data.to_sql(table, con=con, if_exists='append', index=False)
-        con.close()
+        conn, cur = postgres_create_connection(user=user, password=_pass, host=host, dbname=dbname)
+        data, columns = read_csv_file(path_to_csv=csv_file_path)
+        create_table_if_exists(cur=cur, table=table, columns=columns)
+        insert_values(conn=conn, cur=cur, table=table, values=data.values)
 
 query = Queries
